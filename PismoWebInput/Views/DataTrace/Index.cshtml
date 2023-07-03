@@ -1,0 +1,156 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Extensions
+@using PismoWebInput.Core.Infrastructure.Models.BlockMap
+@using PismoWebInput.Core.Infrastructure.Models.Master
+@model PismoWebInput.Core.Infrastructure.Models.DataTrace.DataTraceFilter
+
+@{
+    ViewData["Title"] = "Data Trace";
+    var operators = ViewData["Operators"] as List<List<MasterModel>>;
+    var dataList = ViewData["DataList"] as List<BlockMapModel>;
+}
+
+
+@section Scripts{
+<script language="javascript">
+    function ProcessOnChange(operationId, operationName) {
+        var processField = $('#OperationId');
+        var processNameField = $('#OperationName');
+        var dropdownBtn = $('#ProcessDropdownMenu');
+        var dropdownItems = $('.dropdown button');
+
+        processField.val(operationId);
+        processNameField.val(operationName);
+        dropdownBtn.html(operationName);
+
+        dropdownItems.removeClass('btn-primary');
+        dropdownItems.each(function(index, element){
+            var id = $(element).attr("att-id");
+            if (id == operationId) {
+                $(element).addClass('btn-primary');
+            }
+        });
+    }
+
+</script>
+}
+
+<section class="h-100 w-100">
+    <div class="row justify-content-sm-center h-100">
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-body p-5">
+                    <form method="POST" class="needs-validation" novalidate="" autocomplete="off">
+                        <div class="mb-3">
+                            <label for="OperatorId" class="mb-1 fw-bold">Operator ID</label>
+                            <input id="OperatorId" class="form-control" disabled value="@User.Identity?.Name">
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="IndicationId" class="mb-1 fw-bold">Indication ID</label>
+                            <input asp-for="IndicationId" class="form-control" autofocus>
+                            <span asp-validation-for="IndicationId" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <div class="dropdown">
+                                <label for="ProcessDropdownMenu" class="mb-1 fw-bold">Sequence</label>
+                                <input asp-for="OperationId" type="hidden">
+                                <input asp-for="OperationName" type="hidden">
+                                <button class="btn w-100 border dropdown-toggle" type="button" id="ProcessDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @(Model?.OperationName ?? "All")
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="ProcessDropdownMenu">
+                                    <li>
+                                        @if (operators != null)
+                                        {
+                                            <button type="button" class="btn text-center m-2 @(Model?.OperationId == null ? "btn-primary" : "btn-outline-primary")" onclick="ProcessOnChange('', 'All')">
+                                                All
+                                            </button>
+                                            <div class="d-flex justify-content-around align-items-start">
+                                                @foreach (var operatorList in operators)
+                                                {
+                                                    @if (operatorList.Any())
+                                                    {
+                                                        <div class="d-flex flex-column border border-primary rounded" style="width: 30%">
+                                                            <label class="fw-bold text-center bg-primary text-white" style="height: 38px; line-height: 38px">@operatorList[0].Type</label>
+                                                            <div class="p-2">
+                                                                @foreach (var item in operatorList)
+                                                                {
+                                                                    <button att-id="@item.Id" type="button" class="btn text-start w-100 @(Model?.OperationId != null && Model?.OperationId == item.Id ? "btn-primary" : "")" onclick="ProcessOnChange('@item.Id', '@item.Name')">
+                                                                        @item.Name
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="BlockEmapID" class="mb-1 fw-bold">Block/Emap ID</label>
+                            <input asp-for="BlockEmapID" class="form-control">
+                            <span asp-validation-for="BlockEmapID" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            @Html.ValidationSummary()
+                        </div>
+
+
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="Home" asp-action="Index" style="width: 85px">
+                                <i class="fa-solid fa-arrow-left"></i>  Back
+                            </a>
+                            <button type="submit" class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px">
+                                <i class="fa-solid fa-save"></i> Search
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-body d-flex justify-content-around align-items-start" style="height: calc(100vh - 110px); overflow: auto">
+                    <table class="table align-middle mb-0 bg-white table table-bordered border-primary">
+                        <thead class="bg-light">
+                            <tr class="text-center">
+                                <th class="w-50">Block/Emap ID</th>
+                                <th class="w-50">Type</th>
+                                <th class="w-25">NG Qty</th>
+                                <th class="w-auto">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (dataList is { Count: > 0 })
+                            {
+                                @foreach (var item in dataList)
+                                {
+                                    <tr class="text-center">
+                                        <td>@item.BlockId</td>
+                                        <td>@(item.BlockType == BlockType.BlockId ? "Block" : item.BlockType == BlockType.EMapId ? "EMap" : "")</td>
+                                        <td>@item.ErrorCount</td>
+                                        <td>
+                                            <a class="btn btn-lg btn-primary" asp-area="" asp-controller="DataTrace" asp-action="Details" asp-route-id="@item.Id">
+                                                <i class="fa-solid fa-circle-info"></i> Detail
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center">There are no data</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

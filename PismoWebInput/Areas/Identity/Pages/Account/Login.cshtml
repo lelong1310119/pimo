@@ -1,0 +1,56 @@
+﻿@page
+@using PismoWebInput.Areas.Identity.Pages.Account
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+    Layout = "_LayoutBlank";
+}
+
+<section class="h-100">
+    <div class="container h-100">
+        <div class="row justify-content-sm-center h-100">
+            <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
+                <div class="text-center my-5">
+                    <img src="~/logo.png" alt="logo" class="w-100">
+                    <h1 class="card-title mt-3 text-center">Web - Input</h1>
+                </div>
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <h1 class="fs-4 card-title fw-bold mb-3 text-center">@ViewData["Title"]</h1>
+                        <form method="POST" class="needs-validation" novalidate="" autocomplete="off">
+                            <div class="mb-3">
+                                <label asp-for="Input.Email" class="mb-1 fw-bold">Operator ID</label>
+                                <input asp-for="Input.Email" class="form-control" aria-required="true" required autofocus>
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="mb-2 w-100">
+                                    <label asp-for="Input.Password" class="fw-bold">Password</label>
+                                </div>
+                                <input asp-for="Input.Password" type="password" class="form-control" aria-required="true" required>
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+                            @Html.ValidationSummary(true)
+
+                            <div class="d-flex align-items-center justify-content-center">
+                                <button type="submit" class="btn btn-lg btn-primary">
+                                    <i class="fa-solid fa-right-to-bracket me-2"></i> Log in
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="text-center mt-5 text-muted">
+                    Copyright &copy; 2023 &mdash; The Company
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+}

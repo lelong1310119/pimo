@@ -1,0 +1,40 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+}
+
+.input-validation-error {
+    border: 1px solid #dc3545 !important;
+}
+
+.validation-summary-errors {
+    text-align: center;
+}
+
+    .validation-summary-errors ul {
+        list-style: none;
+        padding: 0;
+        color: #dc3545 !important;
+    }
+
+.btn-dark-blue {
+    background-color: #0000EE;
+    border-color: #0000EE;
+}
+
+    .btn-dark-blue:hover {
+        background-color: #3b3beb;
+    }

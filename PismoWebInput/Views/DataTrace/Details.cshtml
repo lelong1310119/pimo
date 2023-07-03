@@ -1,0 +1,160 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Extensions
+@using PismoWebInput.Core.Infrastructure.Models.BlockMap
+@using PismoWebInput.Core.Infrastructure.Models.Master
+@model PismoWebInput.Core.Infrastructure.Models.BlockMap.BlockMapModel
+
+@{
+    ViewData["Title"] = "Data Trace - Detail";
+    var itemsHasError = Model.Details.Where(x => x.DefectId.HasValue).ToList();
+    var cellModel = ViewData["CellModel"] as BlockMapDetailModel;
+}
+
+<style scoped>
+    .block-map {
+        height: 328px;
+        gap: 1px
+    }
+
+        .block-map a {
+            width: 25%;
+            height: 52px;
+            line-height: 52px;
+            text-align: center;
+            padding: 0;
+        }
+</style>
+
+@section Scripts{
+<script language="javascript">
+    function defectCodeChanged() {
+        var code = $('#DefectCode').val();
+        $.ajax({
+            url: `${window.location.origin}/DataTrace/GetErrorCode`,
+            type: 'post',
+            data: `code=${code}`,
+            success: function(result) {
+                if (result) {
+                    $('#DefectCodeError').html('');
+                    $('#DefectName').val(result.name);
+                    $('#CellFormSubmitBtn').prop('disabled', false);
+                }
+            },
+            error: function(msg) {
+                if (msg.responseText) {
+                    $('#DefectCodeError').html(msg.responseText);
+                    $('#DefectName').val('');
+                    $('#CellFormSubmitBtn').prop('disabled', true);
+                }
+            }
+        });
+    }
+
+    $(function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+}
+
+<section class="h-100 w-100">
+    <div class="row justify-content-sm-center h-100">
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-body p-5">
+                    <div>
+                        <table class="table align-middle mb-0 bg-white table table-bordered border-primary">
+                            <thead class="bg-light">
+                                <tr class="text-center">
+                                    <th>Block/Emap ID</th>
+                                    <th>NG Qty</th>
+                                    <th>NG position</th>
+                                    <th>Defect code</th>
+                                    <th>Defect name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-center">
+                                    <td rowspan="@(itemsHasError.Count+1)">@Model.BlockId</td>
+                                    <td rowspan="@(itemsHasError.Count+1)">@Model.ErrorCount</td>
+                                </tr>
+                                @foreach (var item in itemsHasError)
+                                {
+                                    <tr class="text-center">
+                                        <td>@item.Location</td>
+                                        <td>@item.DefectCode</td>
+                                        <td>@item.DefectName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center mt-3">
+                        <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="DataTrace" asp-action="Index" style="width: 85px">
+                            <i class="fa-solid fa-arrow-left"></i>  Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-body row justify-content-around align-items-start">
+                    @if (Model?.Details != null)
+                    {
+                        <div class="border border-primary p-2 bg-warning col-md-6 col-sm-12">
+                            <div class="d-flex flex-row w-100" style="gap: 4px;">
+                                <div class="d-flex flex-column flex-wrap block-map align-items-center justify-content-center w-100">
+                                    @foreach (var item in Model.Details.OrderBy(x => x.Location))
+                                    {
+                                        <a class="btn text-center border border-dark @(item.DefectId.HasValue ? "btn-danger" : "")"
+                                   data-bs-toggle="@(item.DefectId.HasValue ? "tooltip" : "")" data-bs-placement="bottom" title="@(item.DefectId.HasValue ? item.DefectName : "")"
+                                   asp-action="Details" asp-route-id="@Model.Id" asp-route-location="@item.Location">
+                                            @item.Location
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (cellModel != null)
+                    {
+                        <div class="col-md-12 mt-3">
+                            <form id="CellForm" asp-action="Details">
+                                <div class="d-flex p-2 align-items-center border border-primary rounded bg-warning w-100">
+                                    <div class="w-100">
+                                        <input id="BlockMapId" name="BlockMapId" value="@cellModel.BlockMapId" type="hidden" />
+                                        <input id="Id" name="Id" value="@cellModel.Id" type="hidden" />
+                                        <div class="mb-2">
+                                            <label for="Location" class="mb-1 fw-bold">Pattern No.</label>
+                                            <input id="Location" name="Location" class="form-control" readonly="readonly" value="@cellModel.Location">
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="DefectCode" class="mb-1 fw-bold">Defect code</label>
+                                            <input id="DefectCode" name="DefectCode" class="form-control" value="@cellModel.DefectCode" oninput="defectCodeChanged()">
+                                            <span id="DefectCodeError" class="text-danger"></span>
+                                        </div>
+                                        <div>
+                                            <label for="DefectName" class="mb-1 fw-bold">Defect name</label>
+                                            <input id="DefectName" name="DefectName" class="form-control" value="@cellModel.DefectName" readonly="readonly">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <button type="reset" class="btn btn-lg btn-dark-blue text-white m-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px">
+                                            <i class="fa-solid fa-rotate"></i> Reset
+                                        </button>
+                                        <button id="CellFormSubmitBtn" type="submit" disabled class="btn btn-lg btn-success m-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px">
+                                            <i class="fa-solid fa-save"></i> Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

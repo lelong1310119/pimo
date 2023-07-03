@@ -1,0 +1,63 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Extensions
+@using PismoWebInput.Core.Infrastructure.Models.Master
+@model PismoWebInput.Core.Infrastructure.Models.Master.MasterModel
+
+@{
+    ViewData["Title"] = "Master Manager - Edit";
+    var listTypes = new List<SelectListItem>
+    {
+        new(MasterTypeEnum.Front.ToString(), $"{MasterTypeEnum.Front}"),
+        new(MasterTypeEnum.Back.ToString(), $"{MasterTypeEnum.Back}"),
+        new(MasterTypeEnum.QC.ToString(), $"{MasterTypeEnum.QC}"),
+        new(MasterTypeEnum.ErrorCode.ToString(), $"{MasterTypeEnum.ErrorCode}"),
+    };
+}
+
+<section class="h-100 w-100">
+    <form method="POST" class="needs-validation h-100" novalidate="" autocomplete="off">
+        <div class="row justify-content-sm-center">
+            <div class="col-lg-6 mb-3">
+                <div class="card shadow-lg h-100">
+                    <div class="card-body p-5">
+                        <input asp-for="Id" type="hidden">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="mb-1 fw-bold"></label>
+                            <input asp-for="Name" class="form-control" aria-required="true" required autofocus autocomplete="false">
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Code" class="mb-1 fw-bold"></label>
+                            <input asp-for="Code" class="form-control" required aria-required="true">
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Type" class="mb-1 fw-bold"></label>
+                            @Html.DropDownListFor(model => model.Type, listTypes, new { @class = "form-control"})
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            @Html.ValidationSummary(true)
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-center">
+                            <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="Master" asp-action="Index" style="width: 85px">
+                                <i class="fa-solid fa-arrow-left"></i> Back
+                            </a>
+                            <button type="reset" class="btn btn-lg btn-warning mx-3 d-flex flex-column align-items-center justify-content-center text-white" style="width: 85px">
+                                <i class="fa-solid fa-rotate"></i>  Reset
+                            </button>
+                            <button type="submit" class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px">
+                                <i class="fa-solid fa-save"></i>  Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+}

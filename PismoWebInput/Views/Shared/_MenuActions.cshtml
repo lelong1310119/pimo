@@ -1,0 +1,65 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Domain.Entities
+@using PismoWebInput.Core.Infrastructure.Extensions
+@inject SignInManager<AppUser> _signInManager
+@inject UserManager<AppUser> _userManager
+
+<style scoped>
+    .actions-container .feature-btn {
+        width: 180px;
+        height: 180px;
+    }
+
+        .actions-container .feature-btn i {
+            font-size: 90px;
+        }
+</style>
+
+@if (_signInManager.IsSignedIn(User))
+{
+    @if (User.IsInRoles(new List<string> { AppRoleEnum.Admin.ToString(), AppRoleEnum.Leader.ToString(), AppRoleEnum.Staff.ToString() }))
+    {
+        <div class=" h-100 d-flex flex-column align-items-center justify-content-center">
+            <div class="d-flex justify-content-center flex-wrap align-items-center actions-container">
+                <a class="btn btn-primary btn-lg m-4" asp-area="" asp-controller="UserOperation" style="width: 180px">Operation</a>
+                @if (User.IsInRole(AppRoleEnum.Admin.ToString()))
+                {
+                    <a class="btn btn-outline-primary btn-lg m-4 d-flex flex-column align-items-center justify-content-around feature-btn" asp-area="" asp-controller="Master">
+                        <i class="fa-solid fa-file-lines"></i>
+                        Master content
+                    </a>
+                }
+
+                <a class="btn btn-outline-primary btn-lg m-4 d-flex flex-column align-items-center justify-content-around feature-btn" asp-area="" asp-controller="UserManager">
+                    <i class="fa-solid fa-users-gear"></i>
+                    User manager
+                </a>
+                <a class="btn btn-outline-primary btn-lg m-4 d-flex flex-column align-items-center justify-content-around feature-btn" asp-area="" asp-controller="DataTrace">
+                    <i class="fa-solid fa-file-lines"></i>
+                    Data Trace
+                </a>
+                @if (User.IsInRole(AppRoleEnum.Admin.ToString()))
+                {
+                    <a class="btn btn-outline-primary btn-lg m-4 d-flex flex-column align-items-center justify-content-around feature-btn" asp-area="" asp-controller="Analysis">
+                        <i class="fa-solid fa-square-poll-vertical"></i>
+                        Analysis
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg m-4 d-flex flex-column align-items-center justify-content-around feature-btn" asp-area="" asp-controller="Productivity">
+                        <i class="fa-solid fa-arrow-up-right-dots"></i>
+                        Productivity
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg m-4 d-flex flex-column align-items-center justify-content-around feature-btn" asp-area="" asp-controller="PickingStatus">
+                        <i class="fa-solid fa-check"></i>
+                        Picking Status
+                    </a>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+
+}
+

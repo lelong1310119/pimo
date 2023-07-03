@@ -1,0 +1,147 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Common.Extensions
+@using PismoWebInput.Core.Infrastructure.Extensions
+@using PismoWebInput.Core.Infrastructure.Models.Master
+@model PismoWebInput.Core.Infrastructure.Models.Operation.OperationInputModel
+
+@{
+    ViewData["Title"] = "Operation";
+    var displayBlocks = Model?.Sided is null or 1 ? Model?.A_Blocks : Model?.B_Blocks;
+}
+
+@section Scripts{
+<script language="javascript">
+    var enterHit = false;
+
+    function initTooltips() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    function registerEnterKeyPress() {
+        enterKeyEvent('#IndicationId',
+            () => {
+                focusInput('#BlockId');
+            });
+
+        enterKeyEvent('#BlockId',
+            () => {
+                focusInput('#PatternNo');
+            });
+
+        enterKeyEvent('#PatternNo',
+            () => {
+                focusInput('#DefectCode');
+            });
+
+        enterKeyEvent('#DefectCode',
+            () => {
+                var hasError = $('#CodeError').html();
+                if (!hasError) {
+                    enterHit = true;
+                    updateModel(() => {
+                        enterHit = false;
+                        focusInput('#PatternNo');
+                    });
+                }
+            });
+    }
+
+    function updateModel(successCallback = null) {
+        $.ajax({
+            url: window.location.origin + "/UserOperation/UpdateViewData",
+            type: "post",
+            data: $("#partialform").serialize() + `&EnterHit=${enterHit}`,
+            success: function(result) {
+                $("#partial").html(result);
+                initTooltips();
+                registerEnterKeyPress();
+                if (successCallback) {
+                    successCallback(result);
+                }
+            },
+            error: function(msg) {
+                if (msg.responseText) {
+                    alert(msg.responseText);
+                }
+            }
+        });
+    };
+
+    function defectCodeChanged() {
+        updateModel(() => {
+            focusInput('#DefectCode');
+            var hasError = $('#CodeError').html();
+            $('#NextButton').prop('disabled', hasError ? true : false);
+        });
+    }
+
+    function patternNoChanged() {
+        var patternNo = $('#PatternNo').val();
+        var maxLength = @(displayBlocks?.Sum(x => x.Details.Count) ?? 0);
+        if (patternNo <= 0) {
+            $('#PatternNo').val('');
+            alert("Out of range");
+        } else if (patternNo > maxLength) {
+            $('#PatternNo').val(maxLength);
+            alert("Out of range. Auto set to max");
+        }
+        updateModel(() => {
+            focusInput('#PatternNo');
+        });
+    }
+
+    function focusInput(selector) {
+        var input = $(selector);
+        input.focus();
+        var currentVal = input.val();
+        input.val('');
+        input.val(currentVal);
+    }
+
+    function enterKeyEvent(selector, callBack) {
+        $(selector).keypress(function(event) {
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if (keycode == '13') {
+                callBack();
+            }
+        });
+    }
+
+    $(function() {
+        $('#partial').on(
+            'change',
+            '.update_model',
+            () => updateModel(() => {
+                var indicationId = $('#IndicationId').val();
+                var blockId = $('#BlockId').val();
+                var patternNo = $('#PatternNo').val();
+                if (indicationId && !blockId) {
+                    focusInput('#BlockId');
+                }
+                if (blockId && !patternNo) {
+                    focusInput('#PatternNo');
+                }
+            }));
+
+        var indicationId = $('#IndicationId').val();
+        var blockId = $('#BlockId').val();
+        var patternNo = $('#PatternNo').val();
+
+        if (indicationId && blockId && !patternNo) {
+            focusInput('#PatternNo');
+        }
+        initTooltips();
+    });
+</script>
+}
+
+<section class="h-100 w-100">
+    <form id="partialform" class="needs-validation h-100" novalidate="" autocomplete="off">
+        <div id="partial" class="h-100">
+            <partial name="_DetailPartial" model="Model" />
+        </div>
+    </form>
+</section>

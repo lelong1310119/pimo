@@ -1,0 +1,193 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Extensions
+@using PismoWebInput.Core.Infrastructure.Models.Analysis
+@using PismoWebInput.Core.Infrastructure.Models.BlockMap
+@using PismoWebInput.Core.Infrastructure.Models.Master
+@model PismoWebInput.Core.Infrastructure.Models.Analysis.AnalysisFilter
+
+@{
+    ViewData["Title"] = "Analysis";
+    var operators = ViewData["Operators"] as List<List<MasterModel>>;
+    var dataList = ViewData["DataList"] as HeatMapResult;
+    var listTypes = new List<SelectListItem>
+    {
+        new(MasterTypeEnum.Front.ToString(), $"{MasterTypeEnum.Front}"),
+        new(MasterTypeEnum.Back.ToString(), $"{MasterTypeEnum.Back}"),
+        new(MasterTypeEnum.QC.ToString(), $"{MasterTypeEnum.QC}"),
+        new(MasterTypeEnum.ErrorCode.ToString(), $"{MasterTypeEnum.ErrorCode}"),
+    };
+}
+
+
+@section Scripts{
+    <script language="javascript">
+        function ProcessOnChange(operationId, operationName) {
+            var processField = $('#OperationId');
+            var processNameField = $('#OperationName');
+            var dropdownBtn = $('#ProcessDropdownMenu');
+            var dropdownItems = $('.dropdown button');
+
+            processField.val(operationId);
+            processNameField.val(operationName);
+            dropdownBtn.html(operationName);
+
+            dropdownItems.removeClass('btn-primary');
+            dropdownItems.each(function(index, element){
+                var id = $(element).attr("att-id");
+                if (id == operationId) {
+                    $(element).addClass('btn-primary');
+                }
+            });
+        }
+
+        $(function() {
+                var data = {
+                    labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataList.Labels)),
+                    datasets: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataList.Data)),
+                };
+
+                var ctx = document.getElementById('heatmap').getContext('2d');
+                var newChart = new window.Chart(ctx).HeatMap(data,
+                    {
+                        // String - background color for graph
+                        backgroundColor: '#FFC107',
+                        // Boolean - whether each box in the dataset is outlined
+                        stroke: false,
+                        // Number - width of the outline stroke.
+                        strokePerc: 0.05,
+                        // String - the outline stroke color.
+                        strokeColor: "rgb(128,128,128)",
+                        // String - the outline stroke highlight color.
+                        highlightStrokeColor: "rgb(192,192,192)",
+                        // Boolean - whether to draw the heat map boxes with rounded corners
+                        rounded: false,
+                        // Number - the radius (as a percentage of size) of the rounded corners
+                        roundedRadius: 0,
+                        // Number - padding between heat map boxes (as a percentage of box size)
+                        paddingScale: 0.05,
+                        // String - "gradient", "palette"
+                        colorInterpolation: "gradient",
+                        // Array[String] - the colors used for the active color scheme.
+                        // Any number of colors is allowed.
+                        colors: [ "#4CAF50", "#FF5722", "#FFEB3B", "#FF9800", "#F44336" ],
+                        // Boolean - whether boxes change color on hover.
+                        colorHighlight: false,
+                        // Number - a floating point value which specifies how much lighter or
+                        // darker a color becomes when hovered, where 1 is no change,
+                        // 0.9 is slightly darker, and 1.1 is slightly lighter.
+                        colorHighlightMultiplier: 1,
+                        // Boolean - Whether to draw labels on the boxes
+                        showLabels: true,
+                        // Number - the font size of the label as percentage of box height
+                        labelScale: 0.2,
+                        // String - label font family
+                        labelFontFamily: '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif',
+                        // String - label font style
+                        labelFontStyle: "normal",
+                        // String - label font color
+                        labelFontColor: "rgba(0,0,0,0.5)",
+                        // String - tooltipTemplate
+                        tooltipTemplate: "<%= xLabel %> | <%= yLabel %> : <%= value %>",
+                        // String - template for legend generation
+                        legendTemplate : '<div class="<%= name.toLowerCase() %>-legend">'+
+                            '<span class="<%= name.toLowerCase() %>-legend-text">'+
+                            '<%= min %>'+
+                            '</span>'+
+                            '<% for (var i = min; i <= max; i += (max-min)/2){ %>'+ // change 6 to number of divisions required
+                            '<span class="<%= name.toLowerCase() %>-legend-box" style="background-color: <%= colorManager.getColor(i).color %>;">  </span>'+
+                            '<% } %>'+
+                            '<span class="<%= name.toLowerCase() %>-legend-text">'+
+                            '<%= max %>'+
+                            '</span>'+
+                            '</div>'
+                    });
+            }
+        );
+    </script>
+}
+
+<section class="h-100 w-100">
+    <div class="row justify-content-sm-center h-100">
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-body p-5">
+                    <form method="POST" class="needs-validation" novalidate="" autocomplete="off">
+                        <div class="mb-3">
+                            <label for="OperatorId" class="mb-1 fw-bold">Operator ID</label>
+                            <input id="OperatorId" class="form-control" disabled value="@User.Identity?.Name">
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="IndicationId" class="mb-1 fw-bold">Indication ID</label>
+                            <input asp-for="IndicationId" class="form-control" autofocus>
+                            <span asp-validation-for="IndicationId" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Type" class="mb-1 fw-bold"></label>
+                            @Html.DropDownListFor(model => model.Type, listTypes, new { @class = "form-control", @required = true })
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <div class="dropdown">
+                                <label for="ProcessDropdownMenu" class="mb-1 fw-bold">Sequence</label>
+                                <input asp-for="OperationId" type="hidden">
+                                <input asp-for="OperationName" type="hidden">
+                                <button class="btn w-100 border dropdown-toggle" type="button" id="ProcessDropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @(Model?.OperationName ?? "All")
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="ProcessDropdownMenu">
+                                    <li>
+                                        @if (operators != null)
+                                        {
+                                            <button type="button" class="btn text-center m-2 @(Model?.OperationId == null ? "btn-primary" : "btn-outline-primary")" onclick="ProcessOnChange('', 'All')">
+                                                All
+                                            </button>
+                                            <div class="d-flex justify-content-around align-items-start">
+                                                @foreach (var operatorList in operators)
+                                                {
+                                                    @if (operatorList.Any())
+                                                    {
+                                                        <div class="d-flex flex-column border border-primary rounded" style="width: 30%">
+                                                            <label class="fw-bold text-center bg-primary text-white" style="height: 38px; line-height: 38px">@operatorList[0].Type</label>
+                                                            <div class="p-2">
+                                                                @foreach (var item in operatorList)
+                                                                {
+                                                                    <button att-id="@item.Id" type="button" class="btn text-start w-100 @(Model?.OperationId != null && Model?.OperationId == item.Id ? "btn-primary" : "")" onclick="ProcessOnChange('@item.Id', '@item.Name')">
+                                                                        @item.Name
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            @Html.ValidationSummary()
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="Home" asp-action="Index" style="width: 85px">
+                                <i class="fa-solid fa-arrow-left"></i>  Back
+                            </a>
+                            <button type="submit" class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px">
+                                <i class="fa-solid fa-save"></i> Search
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-lg h-100">
+                <div class="card-body d-flex justify-content-around align-items-start" style="height: calc(100vh - 110px); overflow: auto">
+                    <canvas id="heatmap" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

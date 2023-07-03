@@ -1,0 +1,121 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Extensions
+@using PismoWebInput.Core.Infrastructure.Models.StatusPicking
+@model PismoWebInput.Core.Infrastructure.Models.StatusPicking.PickingStatusModel
+
+@{
+    ViewData["Title"] = "PickingStatus - Edit";
+}
+
+<section class="h-100 w-100">
+    <form method="POST" class="needs-validation h-100" novalidate="" autocomplete="off">
+        <div class="row justify-content-sm-center">
+            <div class="col-lg-6 mb-3">
+                <div class="card shadow-lg h-100">
+                    <div class="card-body p-5">
+                        <input asp-for="Id" type="hidden">
+                        <div class="mb-3">
+                            <label asp-for="PickingStatusID" class="mb-1 fw-bold"></label>
+                            <input asp-for="PickingStatusID" class="form-control" aria-required="true" required autofocus autocomplete="false" type="number">
+                            <span asp-validation-for="PickingStatusID" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PickingInstructionNo" class="mb-1 fw-bold"></label>
+                            <input asp-for="PickingInstructionNo" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="PickingInstructionNo" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MFInstructionNo" class="mb-1 fw-bold"></label>
+                            <input asp-for="MFInstructionNo" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="MFInstructionNo" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="StartPickingTime" class="mb-1 fw-bold"></label>
+                            <input asp-for="StartPickingTime" class="form-control" aria-required="true" autofocus type="datetime-local">
+                            <span asp-validation-for="StartPickingTime" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="EndPickingTime" class="mb-1 fw-bold"></label>
+                            <input asp-for="EndPickingTime" class="form-control" aria-required="true" autofocus type="datetime-local">
+                            <span asp-validation-for="EndPickingTime" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="STCode" class="mb-1 fw-bold"></label>
+                            <input asp-for="STCode" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="STCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="LineCode" class="mb-1 fw-bold"></label>
+                            <input asp-for="LineCode" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="LineCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ShutterCode" class="mb-1 fw-bold"></label>
+                            <input asp-for="ShutterCode" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="ShutterCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ParentItemCode" class="mb-1 fw-bold"></label>
+                            <input asp-for="ParentItemCode" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="ParentItemCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ParentItemQty" class="mb-1 fw-bold"></label>
+                            <input asp-for="ParentItemQty" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="ParentItemQty" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ChildItemCode" class="mb-1 fw-bold"></label>
+                            <input asp-for="ChildItemCode" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="ChildItemCode" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ChildItemQty" class="mb-1 fw-bold"></label>
+                            <input asp-for="ChildItemQty" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="ChildItemQty" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PickingInstructionStatus" class="mb-1 fw-bold"></label>
+                            <input asp-for="PickingInstructionStatus" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="PickingInstructionStatus" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MFInstructionStatus" class="mb-1 fw-bold"></label>
+                            <input asp-for="MFInstructionStatus" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="MFInstructionStatus" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="User_code" class="mb-1 fw-bold"></label>
+                            <input asp-for="User_code" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="User_code" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Status" class="mb-1 fw-bold"></label>
+                            <input asp-for="Status" class="form-control" aria-required="true" autofocus>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            @Html.ValidationSummary(true)
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-center">
+                            <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="PickingStatus" asp-action="Index" asp-route-page="@ViewContext.HttpContext.Session.GetInt32("page")" style="width: 85px">
+                                <i class="fa-solid fa-arrow-left"></i> Back
+                            </a>
+                            <button type="reset" class="btn btn-lg btn-warning mx-3 d-flex flex-column align-items-center justify-content-center text-white" style="width: 85px">
+                                <i class="fa-solid fa-rotate"></i>  Reset
+                            </button>
+                            <button type="submit" class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px">
+                                <i class="fa-solid fa-save"></i>  Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,288 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Models.StatusPicking
+@model PismoWebInput.Core.Infrastructure.Models.StatusPicking.PickingStatusFilter
+@{
+    ViewData["Title"] = "Picking Status";
+    int currentPage = (int)(ViewData["page"] ?? 0);
+    var listItems = ViewData["items"] as List<PickingStatusModel>;
+    int totalPage = (int)(ViewData["totalPage"] ?? 0);
+}
+
+<section class="h-100 w-100">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="w-100 text-center">
+            @Html.ValidationSummary(true);
+        </div>
+    }
+    <div class="row justify-content-sm-center h-100">
+        <div class="col-lg-9 mb-3">
+            <div class="card shadow-lg h-100">
+                <div class="card-body p-5">
+                    <form method="POST" class="needs-validation" novalidate="" autocomplete="off">
+                        <div class="mb-3">
+                            <label asp-for="PickingStatusID" class="mb-1 fw-bold"></label>
+                            <input asp-for="PickingStatusID" class="form-control" aria-required="true" type="number">
+                            <span asp-validation-for="PickingStatusID" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="PickingInstructionNo" class="mb-1 fw-bold"></label>
+                            <input asp-for="PickingInstructionNo" class="form-control" aria-required="true">
+                            <span asp-validation-for="PickingInstructionNo" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MFInstructionNo" class="mb-1 fw-bold"></label>
+                            <input asp-for="MFInstructionNo" class="form-control" aria-required="true">
+                            <span asp-validation-for="MFInstructionNo" class="text-danger"></span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center mt-3">
+                            <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="Home" style="width: 85px">
+                                <i class="fa-solid fa-arrow-left"></i> Back
+                            </a>
+                            <a type="button" class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="PickingStatus" asp-action="Create" style="width: 85px">
+                                <i class="fa-solid fa-save"></i> Add
+                            </a>
+                            <button type="submit" class="btn btn-lg btn-warning mx-3 d-flex flex-column align-items-center justify-content-center text-white" style="width: 85px">
+                                <i class="fa-solid fa-search"></i>  Search
+                            </button>
+                            <a type="button" class="btn btn-lg btn-success mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="PickingStatus" asp-action="ExportExcel" style="width: 85px">
+                                <i class="fa-solid fa-file-export"></i> Export
+                            </a>
+                            <a type="button" class="btn btn-lg btn-info mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="PickingStatus" asp-action="ClearSession" style="width: 85px">
+                                <i class="fa-solid fa-arrows-rotate"></i> Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 mb-3">
+            <div class="card shadow-lg h-100">
+                <div class="card-body p-5" style="/*height: calc(100vh - 110px); */overflow: auto">
+                    <div>
+                        <nav aria-label="Page navigation example">
+                          <ul class="pagination justify-content-start">
+                            @if (currentPage == 1)
+                            {
+                              <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Previous</a>
+                              </li>
+                            }
+                            else
+                            {
+                              <li class="page-item">
+                                <a class="page-link" href="#" onclick="goToPage(@currentPage - 1)">Previous</a>
+                              </li>
+                            }
+                            @if (totalPage > 0)
+                            {
+                              @if (currentPage > 3)
+                              {
+                                <li class="page-item d-none d-md-block">
+                                  <a class="page-link">...</a>
+                                </li>
+                              }
+                              @for (var i = (currentPage - 2); i <= (currentPage + 2); i++)
+                              {
+                                @if (i > 0 && i <= totalPage)
+                                {
+                                  @if (i == currentPage)
+                                  {
+                                    <li class="page-item active"><a class="page-link" href="#" onclick="goToPage(@i)">@i</a></li>
+                                  }
+                                  else
+                                  {
+                                    <li class="page-item"><a class="page-link" href="#" onclick="goToPage(@i)">@i</a></li>
+                                  }
+                                }
+                              }
+                              @if (currentPage < (totalPage - 2))
+                              {
+                                <li class="page-item d-none d-md-block">
+                                  <a class="page-link">...</a>
+                                </li>
+                              }
+                            }
+                            @if (currentPage == totalPage)
+                            {
+                              <li class="page-item disabled">
+                                <a class="page-link" href="#">Next</a>
+                              </li>
+                            }
+                            else
+                            {
+                              <li class="page-item">
+                                <a class="page-link" href="#" onclick="goToPage(@currentPage + 1)">Next</a>
+                              </li>
+                            }
+                          </ul>
+                        </nav>
+                        <table class="table align-middle mb-0 bg-white table table-bordered border-primary">
+                            <thead class="bg-light">
+                                <tr class="text-center">
+                                    <th style="width: 80px">ID</th>
+                                    <th>PickingStatusID</th>
+                                    <th>PickingInstructionNo</th>
+                                    <th>MFInstructionNo</th>
+                                    <th style="width: 200px">StartPickingTime</th>
+                                    <th>EndPickingTime</th>
+                                    <th>STCode</th>
+                                    <th>LineCode</th>
+                                    <th>ShutterCode</th>
+                                    <th>ParentItemCode</th>
+                                    <th>ParentItemQty</th>
+                                    <th>ChildItemCode</th>
+                                    <th>ChildItemQty</th>
+                                    <th>PickingInstructionStatus</th>
+                                    <th>MFInstructionStatus</th>
+                                    <th>UserCode</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (listItems == null || listItems.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="18" class="text-center">There are no data</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var item in listItems)
+                                    {
+                                        <tr>
+                                            <td>@item.Id</td>
+                                            <td>@item.PickingStatusID</td>
+                                            <td>@item.PickingInstructionNo</td>
+                                            <td>@item.MFInstructionNo</td>
+                                            <td>@item.StartPickingTime</td>
+                                            <td>@item.EndPickingTime</td>
+                                            <td>@item.STCode</td>
+                                            <td>@item.LineCode</td>
+                                            <td>@item.ShutterCode</td>
+                                            <td>@item.ParentItemCode</td>
+                                            <td>@item.ParentItemQty</td>
+                                            <td>@item.ChildItemCode</td>
+                                            <td>@item.ChildItemQty</td>
+                                            <td>@item.PickingInstructionStatus</td>
+                                            <td>@item.MFInstructionStatus</td>
+                                            <td>@item.User_code</td>
+                                            <td>@item.Status</td>
+                                            <td>
+                                                <div class="d-flex justify-content-center align-items-center">
+                                                    <a type="button" class="btn btn-lg btn-primary me-2" asp-area="" asp-controller="PickingStatus" asp-action="Edit" asp-route-id="@item.Id">
+                                                        <i class="fa-solid fa-edit"></i>
+                                                    </a>
+                                                    <a onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-lg btn-danger" asp-area="" asp-controller="PickingStatus" asp-action="Delete" asp-route-id="@item.Id">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                                @*<div class="input-group justify-content-center">
+                                        <a type="button" class="btn btn-lg btn-primary w-100" asp-area="" asp-controller="PickingStatus" asp-action="Edit" asp-route-id="@item.Id" style="width: 85px">
+                                        <i class="fa-solid fa-edit"></i> Edit
+                                        </a>
+                                        <a onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-lg btn-danger w-100" asp-area="" asp-controller="PickingStatus" asp-action="Delete" asp-route-id="@item.Id" style="width: 85px">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                        </a>
+                                        <button class="btn fw-bolder w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">. . .</button>
+                                        <ul class="dropdown-menu">
+                                        <li class="px-2 pb-2">
+                                        <a type="button" class="btn btn-lg btn-primary w-100" asp-area="" asp-controller="PickingStatus" asp-action="Edit" asp-route-id="@item.Id" style="width: 85px">
+                                        <i class="fa-solid fa-edit"></i> Edit
+                                        </a>
+                                        </li>
+                                        <li class="px-2">
+                                        <a onclick="return confirm('Are you sure you want to delete this item?');" class="btn btn-lg btn-danger w-100" asp-area="" asp-controller="PickingStatus" asp-action="Delete" asp-route-id="@item.Id" style="width: 85px">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                        </a>
+                                        </li>
+                                        </ul>
+                                        </div>*@
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center justify-content-center mt-3">
+                            <div>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <button class="btn btn-primary btnGo" type="button">Go</button>
+                                    </div>
+                                    <input class="form-control input-page" style="margin-left: 2px; width: 60px;margin-right: 10px;">
+                                </div>
+                                <span class="text-danger"></span>
+                            </div>
+                            @if (currentPage > 1)
+                            {
+                                <button type="button" class="btn btn-outline-primary" onclick="goToPage(@currentPage - 1)">Prev</button>
+                            }
+                            <span class="mx-2">Page: <span id="currentPage">@ViewData["page"]</span></span>
+                            @if (currentPage < totalPage)
+                            {
+                                <button type="button" class="btn btn-outline-primary" onclick="goToPage(@currentPage + 1)">Next</button>
+                            }
+                            <span class="mx-2">Total Page: <span id="currentPage">@ViewData["totalPage"]</span></span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center justify-content-center mt-3">
+                            <span class="d-flex align-items-center justify-content-center invalid-feedback d-none">Vui lòng nhập số từ 1 đến @ViewData["totalPage"]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div class="col-lg-6 mb-3">
+        <div class="card shadow-lg h-100">
+        <div class="card-body p-5">
+        <div class="d-flex align-items-center justify-content-center mt-3">
+        <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="Home" style="width: 85px">
+        <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+        <a type="button" class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="PickingStatus" asp-action="Create" style="width: 85px">
+        <i class="fa-solid fa-save"></i> Add
+        </a>
+        <a type="button" class="btn btn-lg btn-info mx-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="PickingStatus" asp-action="ExportExcel" style="width: 85px">
+        <i class="fa-solid fa-file-export"></i> Export
+        </a>
+        </div>
+        </div>
+        </div>
+        </div>*@
+    </div>
+</section>
+<script>
+    const input = document.querySelector('.input-page');
+    const btnGo = document.querySelector('.btnGo');
+    const feedback = document.querySelector('.invalid-feedback');
+
+    const currentPage = @ViewData["page"];
+    const totalPage = @ViewData["totalPage"];
+
+    btnGo.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const page = input.value.trim();
+        if (isNaN(page) || page < 1 || page > totalPage) {
+            feedback.classList.remove("d-none");
+            feedback.classList.add("d-block");
+            input.classList.add('is-invalid');
+            return;
+        }
+        window.location.href = '/PickingStatus/Index?page=' + page;
+    });
+
+    input.addEventListener('input', function () {
+        feedback.classList.remove("d-block");
+        feedback.classList.add("d-none");
+        input.classList.remove('is-invalid');
+    });
+    function goToPage(page) {
+        window.location.href = "/PickingStatus/Index?page=" + page;
+    }
+</script>

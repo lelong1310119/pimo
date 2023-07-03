@@ -1,0 +1,246 @@
+﻿@model PismoWebInput.Core.Infrastructure.Models.Operation.OperationInputModel
+
+@{
+    var displayBlocks = Model?.Sided is null or 1 ? Model?.A_Blocks : Model?.B_Blocks;
+    var isPc24 = Model?.A_Blocks.Sum(x => x.Details.Count) == 24;
+    var blockEmapLabel = isPc24 ? "eMap ID" : "Block ID";
+    var canSave = string.IsNullOrEmpty(Model?.SummaryError);
+}
+
+<style scoped>
+    .block-map {
+        height: 328px;
+        gap: 1px
+    }
+
+        .block-map a {
+            width: 25%;
+            height: 52px;
+            line-height: 52px;
+            text-align: center;
+            padding: 0;
+        }
+</style>
+
+<div class="row justify-content-sm-center h-100">
+    <div class="col-md-12 mb-3">
+        @if (!string.IsNullOrEmpty(Model?.SummaryError))
+        {
+            <div class="text-center fw-bold mb-3">
+                <span class="text-danger">@Model.SummaryError</span>
+            </div>
+        }
+
+        <div class="card shadow-lg h-100">
+            <div class="card-body p-3">
+                <div class="row p-1">
+                    <div class="col-md-5">
+                        <div class="mb-2">
+                            <label asp-for="Operation" class="mb-1 fw-bold">Sequence</label>
+                            <input asp-for="Operation" class="form-control" disabled>
+                            <span asp-validation-for="Operation" class="text-danger"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="OperatorId" class="mb-1 fw-bold">Operator ID</label>
+                            <input id="OperatorId" value="@User.Identity?.Name" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="mb-2">
+                            <div class="d-flex w-100 align-items-end">
+                                <div class="w-75" data-bs-toggle="@(!string.IsNullOrEmpty(Model?.IndicationId) ? "tooltip" : "")" data-bs-placement="bottom" title="@(!string.IsNullOrEmpty(Model?.IndicationId) ? "Finish Lot to start inputting a new Indication ID" : "")">
+                                    <label asp-for="IndicationId" class="mb-1 fw-bold">Indication ID</label>
+                                    <input asp-for="IndicationId"
+                                           class="form-control update_model" autofocus required
+                                           aria-required="true"
+                                           disabled="@(!string.IsNullOrEmpty(Model?.IndicationId))">
+                                    <span asp-validation-for="IndicationId" class="text-danger"></span>
+
+                                </div>
+                                <div class="w-25 d-flex align-items-end">
+                                    @if (!string.IsNullOrEmpty(Model?.IndicationId))
+                                    {
+                                        <a class="btn btn-lg btn-dark-blue text-white ms-1 me-1 d-flex flex-column align-items-center justify-content-center"
+                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Reset Indication Id"
+                                           style="padding: 8px;"
+                                           asp-action="ResetLot"
+                                           onclick="return confirm('This will discard all data. Are you sure you want to do this?');">
+                                            <i class="fa-solid fa-rotate"></i>
+                                        </a>
+                                    }
+                                    <a class="btn btn-success ms-2 w-100 @(!string.IsNullOrEmpty(Model?.IndicationId) && !string.IsNullOrEmpty(Model?.BlockId) ? "" : "disabled")"
+                                       asp-action="FinishLot"
+                                       aria-disabled="@(string.IsNullOrEmpty(Model?.IndicationId) || string.IsNullOrEmpty(Model?.BlockId))"
+                                       onclick="return confirm('Are you sure you want to finish this lot?');">
+                                        Finish lot
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex w-100 align-items-end">
+                                <div class="w-75" data-bs-toggle="@(!string.IsNullOrEmpty(Model?.BlockId) ? "tooltip" : "")" data-bs-placement="bottom" title="@(!string.IsNullOrEmpty(Model?.BlockId) ? "Save to start inputting a new " + blockEmapLabel : "")">
+                                    <label asp-for="BlockId" class="mb-1 fw-bold">@blockEmapLabel</label>
+                                    <input asp-for="BlockId"
+                                           class="form-control update_model" required
+                                           aria-required="true"
+                                           disabled="@(string.IsNullOrEmpty(Model?.IndicationId) || !string.IsNullOrEmpty(Model?.BlockId))">
+                                    <span asp-validation-for="BlockId" class="text-danger"></span>
+                                </div>
+                                <div class="w-25 d-flex align-items-end">
+                                    <div class="ms-1 me-3">
+                                        @if (!string.IsNullOrEmpty(Model?.BlockId))
+                                        {
+                                            <a class="btn btn-lg btn-dark-blue text-white d-flex flex-column align-items-center justify-content-center" style="padding: 8px;"
+                                               data-bs-toggle="tooltip" data-bs-placement="bottom" title="Reset Block Id"
+                                               asp-action="ResetBlock"
+                                               onclick="return confirm('This will discard all data. Are you sure you want to do this?');">
+                                                <i class="fa-solid fa-rotate"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                    <div class="d-flex flex-row justify-content-start align-items-center mb-2">
+                                        <div class="me-3">
+                                            <input id="sideA" type="radio" name="Sided" value="1" checked="@(Model.Sided == 1)" class="update_model"/>
+                                            <label for="sideA">Side A</label>
+                                        </div>
+                                        <div>
+                                            <input id="sideB" type="radio" name="Sided" value="2" checked="@(Model.Sided == 2)" class="update_model"/>
+                                            <label for="sideB">Side B</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        @if (!string.IsNullOrEmpty(Model?.BlockId))
+                        {
+                            <div class="d-flex p-2 align-items-center border border-primary rounded bg-warning w-100">
+                                <div class="w-100">
+                                    <div class="mb-2">
+                                        <label asp-for="PatternNo" class="mb-1 fw-bold">Pattern No.</label>
+                                        <input asp-for="PatternNo" class="form-control" 
+                                               disabled="@Model.DisableAll" oninput="patternNoChanged()"
+                                               maxlength="6">
+                                        <span asp-validation-for="PatternNo" class="text-danger"></span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label asp-for="DefectCode" class="mb-1 fw-bold">Defect code</label>
+                                        <input asp-for="DefectCode" class="form-control" disabled="@Model.DisableAll" oninput="defectCodeChanged()">
+                                        <span asp-validation-for="DefectCode" class="text-danger"></span>
+                                        <span id="CodeError" class="@(string.IsNullOrEmpty(@Model?.CodeError) ? "hidden" : "text-danger")">@Model?.CodeError</span>
+                                    </div>
+                                    <div>
+                                        <label asp-for="DefectName" class="mb-1 fw-bold">Defect name</label>
+                                        <input asp-for="DefectName" class="form-control" disabled>
+                                        <span asp-validation-for="DefectName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div>
+                                    @if (!Model.DisableAll)
+                                    {
+                                        <a class="btn btn-lg btn-dark-blue text-white m-3 d-flex flex-column align-items-center justify-content-center" asp-area="" asp-controller="UserOperation" asp-action="ClearPattern" style="width: 85px">
+                                            <i class="fa-solid fa-rotate"></i> Clear
+                                        </a>
+                                    }
+                                    <button id="NextButton" type="button" class="btn btn-lg btn-success m-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px"
+                                       onclick="location.href = '@Url.Action("SelectPattern", "UserOperation", new { nextLocation = 0 })'">
+                                        <i class="fa-solid fa-save"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 border border-primary rounded">
+                            <div class="mb-2">
+                                <label asp-for="TotalWsQty" class="mb-1 fw-bold">Total WS qty</label>
+                                <input asp-for="TotalWsQty" class="form-control" disabled>
+                            </div>
+                            <div class="mb-2">
+                                <label for="OkPcsQty" class="mb-1 fw-bold">OK pcs qty</label>
+                                <input id="OkPcsQty" name="OkPcsQty" class="form-control" disabled value="@(Model.OkPcsQty + (Model?.A_Blocks.Sum(x => x.Details.Count(d => !d.DefectId.HasValue)) ?? 0) + (Model?.B_Blocks.Sum(x => x.Details.Count(d => !d.DefectId.HasValue)) ?? 0))">
+                            </div>
+                            <div>
+                                <label for="NgPcsQty" class="mb-1 fw-bold">NG pcs qty</label>
+                                <input id="NgPcsQty" name="NgPcsQty" class="form-control" disabled value="@(Model.NgPcsQty + (Model?.A_Blocks.Sum(x => x.Details.Count(d => d.DefectId.HasValue)) ?? 0) + (Model?.B_Blocks.Sum(x => x.Details.Count(d => d.DefectId.HasValue)) ?? 0))">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model?.BlockId))
+                {
+                    <div class="row mt-2 justify-content-center">
+                        @if (displayBlocks != null)
+                        {
+                            for (var i = -1; i < displayBlocks.Count - 1; i += 2)
+                            {
+                                if (i == -1) i += 1;
+                                var block1 = displayBlocks[i];
+                                var block2 = i + 1 == displayBlocks.Count ? null : displayBlocks[i + 1];
+
+                                <div class="col-lg-4 col-md-6 col-sm-12 p-1">
+                                    <div class="border border-primary p-2 bg-warning">
+                                        <div class="d-flex flex-row w-100" style="gap: 4px;">
+                                            <div class="d-flex flex-column w-100">
+                                                <div class="fw-bold">@(!string.IsNullOrEmpty(block1.BlockId) ? block1.BlockId : block1.EMapId)</div>
+                                                <div class="d-flex flex-column flex-wrap block-map align-items-center justify-content-center">
+                                                    @foreach (var item in block1.Details.OrderBy(x => x.Location))
+                                                    {
+                                                        <a class="btn text-center border border-dark @(Model.PatternNo.HasValue && item.Location == Model.PatternNo ? "btn-primary" : item.DefectId.HasValue ? "btn-danger" : "")"
+                                           asp-action="SelectPattern" asp-route-nextLocation="@item.Location"
+                                           data-bs-toggle="@(item.DefectId.HasValue ? "tooltip" : "")" data-bs-placement="bottom" title="@(item.DefectId.HasValue ? item.DefectName : "")">
+                                                            @item.Location
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                            @if (block2 != null)
+                                            {
+                                                <div class="d-flex flex-column w-100">
+                                                    <div class="fw-bold">@(!string.IsNullOrEmpty(block2.BlockId) ? block2.BlockId : block2.EMapId)</div>
+                                                    <div class="d-flex flex-column flex-wrap block-map align-items-center justify-content-center">
+                                                        @foreach (var item in block2.Details.OrderBy(x => x.Location))
+                                                        {
+                                                            <a class="btn text-center border border-dark @(Model.PatternNo.HasValue && item.Location == Model.PatternNo ? "btn-primary" : item.DefectId.HasValue ? "btn-danger" : "")"
+                                           asp-action="SelectPattern" asp-route-nextLocation="@item.Location"
+                                           data-bs-toggle="@(item.DefectId.HasValue ? "tooltip" : "")" data-bs-placement="bottom" title="@(item.DefectId.HasValue ? item.DefectName : "")">
+                                                                @item.Location
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-center mt-3">
+                        <a type="button" onclick="@(!string.IsNullOrEmpty(Model?.BlockId) && !string.IsNullOrEmpty(Model?.IndicationId) ? "return confirm('This action will finish this lot before back ?');" : "")" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-action="Back" style="width: 85px">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </a>
+                        @if (!Model.DisableAll)
+                        {
+                            <a class="btn btn-lg btn-primary mx-3 d-flex flex-column align-items-center justify-content-center" style="width: 85px" asp-action="SaveBlock">
+                                <i class="fa-solid fa-save"></i> Save
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex align-items-center justify-content-center mt-3">
+                        <a type="button" class="btn btn-lg btn-secondary mx-3 d-flex flex-column align-items-center justify-content-center" asp-action="Back" style="width: 85px">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,12 @@
+﻿@using PismoWebInput.Core.Enums
+@using PismoWebInput.Core.Infrastructure.Extensions
+@{
+    if (User.IsInRoles(new List<string> { AppRoleEnum.Admin.ToString(), AppRoleEnum.Leader.ToString(), AppRoleEnum.Staff.ToString() }))
+    {
+        Layout = "~/Views/Shared/_LayoutAdvance.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutUser.cshtml";
+    }
+}
